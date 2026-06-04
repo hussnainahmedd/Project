@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AviatorX — Signal Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --neon:#00f5ff;--neon2:#0080ff;--gold:#ffd700;--gold2:#ff9500;
+  --bg:#020408;--bg2:#040c14;--panel:#081828;--panel2:#0a2035;
+  --border:rgba(0,245,255,0.15);--border2:rgba(0,245,255,0.3);
+  --text:#e0f4ff;--muted:#4a7a99;
+  --success:#00ff88;--warn:#ff6b00;--red:#ff2244;
+  --fh:'Orbitron',monospace;--fb:'Rajdhani',sans-serif;--fm:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:16px;line-height:1.5;}
+
+/* BG EFFECTS */
+.scanlines{position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:50;}
+.gridbg{position:fixed;top:0;left:0;right:0;bottom:0;background-image:linear-gradient(rgba(0,245,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(2,4,8,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:64px;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.nav-logo{font-family:var(--fh);font-size:1.25rem;font-weight:900;color:var(--neon);text-shadow:0 0 20px rgba(0,245,255,0.5);letter-spacing:2px;cursor:pointer;flex-shrink:0;}
+.nav-logo span{color:var(--gold);}
+.nav-links{display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;}
+.nav-link{font-family:var(--fb);font-size:0.8rem;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:color 0.2s;padding:4px;}
+.nav-link:hover{color:var(--neon);}
+.btn-nav{padding:6px 14px;border:1px solid var(--neon);background:transparent;color:var(--neon);font-family:var(--fh);font-size:0.6rem;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;white-space:nowrap;}
+.btn-nav:hover{background:var(--neon);color:var(--bg);}
+.btn-nav.gold{border-color:var(--gold);color:var(--gold);}
+.btn-nav.gold:hover{background:var(--gold);color:var(--bg);}
+.btn-nav.red{border-color:var(--red);color:var(--red);}
+.btn-nav.red:hover{background:var(--red);color:#fff;}
+
+/* PAGES */
+.page{display:none;min-height:100vh;position:relative;z-index:1;padding-top:64px;}
+.page.active{display:block;}
+#page-auth.active{display:flex;align-items:center;justify-content:center;padding:84px 1rem 2rem;min-height:100vh;}
+
+/* LOADER */
+.loader{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;transition:opacity 0.5s;}
+.loader.out{opacity:0;pointer-events:none;}
+.loader-logo{font-family:var(--fh);font-size:2rem;font-weight:900;color:var(--neon);letter-spacing:4px;animation:glow-pulse 1.5s ease-in-out infinite;}
+.loader-bar-wrap{width:200px;height:2px;background:var(--bg2);}
+.loader-bar{height:100%;background:linear-gradient(90deg,var(--neon2),var(--neon));animation:bar-sweep 1.5s ease-in-out infinite;}
+.loader-txt{font-family:var(--fm);font-size:0.7rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase;}
+@keyframes glow-pulse{0%,100%{text-shadow:0 0 20px rgba(0,245,255,0.4);}50%{text-shadow:0 0 60px rgba(0,245,255,0.9);}}
+@keyframes bar-sweep{0%{width:0;margin-left:0;}50%{width:60%;}100%{width:0;margin-left:200px;}}
+
+/* HERO */
+.hero{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden;}
+.hero-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(ellipse,rgba(0,245,255,0.07) 0%,transparent 70%);pointer-events:none;}
+.hero-badge{display:inline-block;padding:6px 16px;border:1px solid rgba(255,215,0,0.4);background:rgba(255,215,0,0.05);color:var(--gold);font-family:var(--fm);font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:2rem;animation:pulse-border 2s infinite;}
+@keyframes pulse-border{0%,100%{border-color:rgba(255,215,0,0.4);}50%{border-color:rgba(255,215,0,0.9);}}
+.hero h1{font-family:var(--fh);font-size:clamp(2.2rem,7vw,5rem);font-weight:900;line-height:1.1;margin-bottom:1.5rem;}
+.hero h1 .l1{color:var(--text);display:block;}
+.hero h1 .l2{color:var(--neon);text-shadow:0 0 40px rgba(0,245,255,0.4);display:block;}
+.hero h1 .l3{color:var(--gold);text-shadow:0 0 40px rgba(255,215,0,0.3);display:block;}
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:600px;margin:0 auto 3rem;line-height:1.7;}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;}
+.btn-primary{padding:14px 36px;background:linear-gradient(135deg,var(--neon),var(--neon2));color:var(--bg);font-family:var(--fh);font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);transition:all 0.2s;}
+.btn-primary:hover{box-shadow:0 0 30px rgba(0,245,255,0.4);}
+.btn-secondary{padding:12px 28px;background:transparent;color:var(--gold);font-family:var(--fh);font-size:0.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--gold);cursor:pointer;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);transition:all 0.2s;}
+.btn-secondary:hover{background:rgba(255,215,0,0.1);}
+
+/* STATS BAR */
+.stats-bar{display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;padding:3rem 2rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(4,12,20,0.8);}
+.stat-num{font-family:var(--fh);font-size:1.8rem;font-weight:900;color:var(--neon);text-shadow:0 0 20px rgba(0,245,255,0.4);}
+.stat-label{font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;text-align:center;}
+
+/* SECTION */
+.section{padding:5rem 2rem;max-width:1200px;margin:0 auto;}
+.section-title{font-family:var(--fh);font-size:1.5rem;font-weight:700;text-align:center;margin-bottom:0.5rem;color:var(--text);letter-spacing:2px;text-transform:uppercase;}
+.section-line{width:60px;height:2px;background:linear-gradient(90deg,var(--neon),var(--neon2));margin:1rem auto 3rem;}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;}
+.feature-card{background:var(--panel);border:1px solid var(--border);padding:2rem;position:relative;overflow:hidden;transition:all 0.3s;}
+.feature-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent);transform:scaleX(0);transition:transform 0.3s;}
+.feature-card:hover::before{transform:scaleX(1);}
+.feature-card:hover{border-color:var(--border2);transform:translateY(-4px);}
+.feature-icon{font-size:2rem;margin-bottom:1rem;}
+.feature-title{font-family:var(--fh);font-size:0.78rem;font-weight:700;color:var(--neon);margin-bottom:0.75rem;letter-spacing:1px;text-transform:uppercase;}
+.feature-desc{color:var(--muted);font-size:0.9rem;line-height:1.6;}
+
+/* PLATFORM PILLS */
+.platforms-strip{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;padding:2rem 0;}
+.platform-pill{padding:8px 20px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-family:var(--fm);font-size:0.8rem;letter-spacing:1px;transition:all 0.2s;}
+.platform-pill:hover{border-color:var(--neon);color:var(--neon);background:rgba(0,245,255,0.05);}
+
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;}
+.testi-card{background:var(--panel);border:1px solid var(--border);padding:1.5rem;position:relative;}
+.testi-card::before{content:'"';position:absolute;top:1rem;right:1.5rem;font-family:var(--fh);font-size:4rem;color:rgba(0,245,255,0.05);line-height:1;}
+.testi-stars{color:var(--gold);font-size:0.9rem;margin-bottom:1rem;}
+.testi-text{color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:1rem;}
+.testi-author{font-family:var(--fm);font-size:0.75rem;color:var(--neon);}
+
+/* FAQ */
+.faq-list{max-width:700px;margin:0 auto;}
+.faq-item{border-bottom:1px solid var(--border);padding:1.5rem 0;cursor:pointer;}
+.faq-q{font-size:1rem;font-weight:600;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:1rem;}
+.faq-q::after{content:'+';font-family:var(--fh);font-size:1.2rem;color:var(--neon);transition:transform 0.2s;flex-shrink:0;}
+.faq-item.open .faq-q::after{transform:rotate(45deg);}
+.faq-a{display:none;color:var(--muted);font-size:0.9rem;line-height:1.7;padding-top:1rem;}
+.faq-item.open .faq-a{display:block;}
+
+/* DISCLAIMER / FOOTER */
+.disclaimer{background:rgba(255,34,68,0.06);border-top:1px solid rgba(255,34,68,0.2);border-bottom:1px solid rgba(255,34,68,0.2);padding:1.5rem 2rem;text-align:center;font-family:var(--fm);font-size:0.75rem;color:rgba(255,100,120,0.8);letter-spacing:1px;}
+footer{text-align:center;padding:2rem;border-top:1px solid var(--border);font-family:var(--fm);font-size:0.75rem;color:var(--muted);}
+footer span{color:var(--neon);}
+
+/* AUTH */
+.auth-box{width:100%;max-width:460px;background:var(--panel);border:1px solid var(--border);padding:2.5rem;position:relative;overflow:hidden;}
+.auth-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--neon2),var(--neon),var(--gold));}
+.auth-title{font-family:var(--fh);font-size:1.1rem;font-weight:700;color:var(--neon);text-align:center;margin-bottom:2rem;letter-spacing:2px;text-transform:uppercase;}
+.form-group{margin-bottom:1.25rem;}
+.form-label{display:block;font-family:var(--fm);font-size:0.72rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;}
+.form-input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:12px 16px;font-family:var(--fm);font-size:0.9rem;outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--neon);}
+.form-input::placeholder{color:var(--muted);opacity:0.5;}
+.btn-full{width:100%;padding:14px;background:linear-gradient(135deg,var(--neon2),var(--neon));color:var(--bg);font-family:var(--fh);font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;margin-top:0.5rem;transition:all 0.2s;}
+.btn-full:hover{box-shadow:0 0 30px rgba(0,245,255,0.3);}
+.auth-switch{text-align:center;margin-top:1.5rem;font-size:0.85rem;color:var(--muted);}
+.auth-switch a{color:var(--neon);cursor:pointer;text-decoration:none;}
+.form-error{color:var(--red);font-family:var(--fm);font-size:0.75rem;margin-top:6px;display:none;}
+.form-error.show{display:block;}
+.member-select{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.member-opt{padding:8px 4px;border:1px solid var(--border);text-align:center;cursor:pointer;font-family:var(--fm);font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);transition:all 0.2s;user-select:none;}
+.member-opt.sel,.member-opt:hover{border-color:var(--neon);color:var(--neon);background:rgba(0,245,255,0.05);}
+.member-opt.vip.sel{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,0.05);}
+.admin-hint{margin-top:1rem;padding:0.75rem;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.2);font-family:var(--fm);font-size:0.72rem;color:var(--gold);text-align:center;}
+
+/* DASHBOARD */
+.dash-header{padding:2rem 2rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.dash-greeting{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--text);letter-spacing:1px;}
+.dash-greeting span{color:var(--neon);}
+.member-badge{padding:4px 12px;font-family:var(--fm);font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;border:1px solid;}
+.member-badge.free{border-color:var(--muted);color:var(--muted);}
+.member-badge.premium{border-color:var(--neon);color:var(--neon);}
+.member-badge.vip{border-color:var(--gold);color:var(--gold);}
+.dash-content{padding:2rem;}
+.dash-sub{font-family:var(--fh);font-size:0.8rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:1.5rem;}
+
+/* PLATFORM GRID */
+.platform-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:1rem;margin-bottom:3rem;}
+.platform-card{background:var(--panel);border:1px solid var(--border);padding:1.5rem 1rem;text-align:center;transition:all 0.25s;position:relative;overflow:hidden;}
+.platform-card:hover{border-color:var(--neon);transform:translateY(-2px);}
+.platform-logo{width:50px;height:50px;margin:0 auto 0.75rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:0.65rem;font-weight:700;color:#fff;}
+.platform-name{font-family:var(--fh);font-size:0.6rem;font-weight:700;color:var(--text);letter-spacing:1px;text-transform:uppercase;margin-bottom:0.75rem;}
+.btn-connect{padding:6px 16px;font-family:var(--fm);font-size:0.65rem;background:transparent;color:var(--neon);border:1px solid rgba(0,245,255,0.4);cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all 0.2s;display:block;width:100%;margin:0 auto;}
+.btn-connect:hover{background:rgba(0,245,255,0.12);border-color:var(--neon);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal-box{width:100%;max-width:400px;background:var(--panel2);border:1px solid var(--border2);padding:2rem;position:relative;margin:1rem;}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--neon2),var(--neon),var(--gold));}
+.modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;transition:color 0.2s;}
+.modal-close:hover{color:var(--text);}
+.modal-title{font-family:var(--fh);font-size:0.8rem;color:var(--neon);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;}
+.modal-plat{font-family:var(--fh);font-size:1.1rem;color:var(--text);margin-bottom:1.25rem;letter-spacing:1px;}
+.demo-keys-box{font-family:var(--fm);font-size:0.7rem;color:var(--muted);margin-bottom:1.25rem;padding:0.75rem;border:1px solid var(--border);background:var(--bg2);line-height:1.9;}
+.demo-keys-box span{color:var(--gold);}
+.modal-result{text-align:center;padding:0.9rem;font-family:var(--fm);font-size:0.85rem;display:none;margin-top:1rem;border:1px solid;}
+.modal-result.ok{display:block;color:var(--success);border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.05);}
+.modal-result.err{display:block;color:var(--red);border-color:rgba(255,34,68,0.3);background:rgba(255,34,68,0.05);}
+
+/* SIGNAL PAGE */
+.signal-wrap{max-width:900px;margin:0 auto;padding:2rem;}
+.signal-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;}
+.signal-plat{font-family:var(--fh);font-size:1rem;color:var(--text);letter-spacing:1px;}
+.signal-plat span{color:var(--neon);}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);margin-right:8px;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.status-txt{font-family:var(--fm);font-size:0.8rem;color:var(--success);text-transform:uppercase;letter-spacing:2px;}
+.signal-main{background:var(--panel);border:1px solid var(--border2);padding:3rem 2rem;text-align:center;position:relative;overflow:hidden;margin-bottom:1.5rem;}
+.signal-main::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--neon2),var(--neon),var(--gold),var(--neon));background-size:300% 100%;animation:grad-slide 3s linear infinite;}
+@keyframes grad-slide{0%{background-position:0 0;}100%{background-position:100% 0;}}
+.signal-lbl{font-family:var(--fm);font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:0.5rem;}
+.signal-val{font-family:var(--fh);font-size:5rem;font-weight:900;color:var(--neon);text-shadow:0 0 40px rgba(0,245,255,0.5),0 0 80px rgba(0,245,255,0.2);line-height:1;margin:0.5rem 0;letter-spacing:-2px;transition:color 0.3s;}
+@keyframes sig-flash{0%{opacity:0;transform:scale(0.92);}100%{opacity:1;transform:scale(1);}}
+.signal-val.flash{animation:sig-flash 0.4s ease;}
+.signal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border);margin-top:2rem;}
+.signal-stat{background:var(--panel);padding:1rem;text-align:center;}
+.signal-stat-lbl{font-family:var(--fm);font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.5rem;}
+.signal-stat-val{font-family:var(--fh);font-size:1.3rem;font-weight:700;}
+.cd-wrap{background:var(--panel);border:1px solid var(--border);padding:1rem;margin-bottom:1.5rem;}
+.cd-hdr{display:flex;justify-content:space-between;font-family:var(--fm);font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.cd-track{height:4px;background:var(--bg2);position:relative;overflow:hidden;}
+.cd-fill{height:100%;background:linear-gradient(90deg,var(--neon2),var(--neon));transition:width 0.95s linear;box-shadow:0 0 8px rgba(0,245,255,0.5);}
+.history-box{background:var(--panel);border:1px solid var(--border);padding:1.5rem;}
+.history-ttl{font-family:var(--fh);font-size:0.75rem;color:var(--neon);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;}
+table.htable{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:0.8rem;}
+.htable th{color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;font-weight:400;}
+.htable td{padding:10px 12px;border-bottom:1px solid rgba(0,245,255,0.04);color:var(--text);}
+.htable tr:last-child td{border-bottom:none;}
+.htable tr:hover td{background:rgba(0,245,255,0.02);}
+.mc1{color:#88aaff;}.mc2{color:var(--neon);}.mc3{color:var(--gold);}.mc4{color:var(--gold2);text-shadow:0 0 8px rgba(255,149,0,0.4);}
+
+/* PROFILE */
+.profile-wrap{max-width:700px;margin:0 auto;padding:2rem;}
+.profile-card{background:var(--panel);border:1px solid var(--border);padding:2rem;position:relative;overflow:hidden;margin-bottom:1.5rem;}
+.profile-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--neon2),var(--neon),var(--gold));}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--neon2),var(--neon));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:1.4rem;font-weight:900;color:var(--bg);margin-bottom:1rem;}
+.profile-name{font-family:var(--fh);font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:1px;}
+.profile-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.profile-row:last-child{border-bottom:none;}
+.profile-key{font-family:var(--fm);font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.profile-val{font-family:var(--fm);font-size:0.85rem;color:var(--text);}
+.btn-danger{padding:10px 24px;background:transparent;color:var(--red);border:1px solid rgba(255,34,68,0.3);font-family:var(--fh);font-size:0.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
+.btn-danger:hover{background:rgba(255,34,68,0.1);border-color:var(--red);}
+
+/* ADMIN */
+.admin-wrap{max-width:1100px;margin:0 auto;padding:2rem;}
+.admin-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+.admin-title{font-family:var(--fh);font-size:1.1rem;font-weight:900;color:var(--gold);letter-spacing:2px;text-transform:uppercase;}
+.admin-title small{font-size:0.65rem;color:var(--muted);display:block;font-weight:400;margin-top:4px;}
+.admin-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;}
+.admin-stat{background:var(--panel);border:1px solid var(--border);padding:1.5rem;position:relative;overflow:hidden;}
+.admin-stat::after{content:'';position:absolute;bottom:0;left:0;height:2px;width:100%;background:var(--clr);}
+.admin-stat-num{font-family:var(--fh);font-size:1.8rem;font-weight:900;color:var(--clr);line-height:1;margin-bottom:4px;}
+.admin-stat-lbl{font-family:var(--fm);font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.admin-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem;overflow-x:auto;}
+.admin-tab{padding:12px 20px;font-family:var(--fm);font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s;}
+.admin-tab:hover{color:var(--text);}
+.admin-tab.act{color:var(--neon);border-bottom-color:var(--neon);}
+.admin-panel{display:none;}
+.admin-panel.act{display:block;}
+.tbl-wrap{overflow-x:auto;}
+table.atable{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:0.78rem;}
+.atable th{color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;font-weight:400;white-space:nowrap;}
+.atable td{padding:11px 12px;border-bottom:1px solid rgba(0,245,255,0.04);color:var(--text);}
+.atable tr:hover td{background:rgba(255,255,255,0.01);}
+.badge{display:inline-block;padding:2px 10px;font-size:0.62rem;text-transform:uppercase;letter-spacing:1px;border:1px solid;}
+.badge-active{border-color:rgba(0,255,136,0.4);color:var(--success);background:rgba(0,255,136,0.05);}
+.badge-banned{border-color:rgba(255,34,68,0.4);color:var(--red);background:rgba(255,34,68,0.05);}
+.badge-vip{border-color:rgba(255,215,0,0.4);color:var(--gold);background:rgba(255,215,0,0.05);}
+.badge-premium{border-color:rgba(0,245,255,0.4);color:var(--neon);background:rgba(0,245,255,0.05);}
+.badge-free{border-color:rgba(100,100,130,0.4);color:var(--muted);background:transparent;}
+.badge-valid{border-color:rgba(0,255,136,0.4);color:var(--success);}
+.badge-disabled{border-color:rgba(255,34,68,0.4);color:var(--red);}
+.act-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-act{padding:4px 10px;font-family:var(--fm);font-size:0.62rem;background:transparent;cursor:pointer;text-transform:uppercase;letter-spacing:1px;border:1px solid;transition:all 0.15s;}
+.btn-del{color:var(--red);border-color:rgba(255,34,68,0.3);}
+.btn-del:hover{background:rgba(255,34,68,0.1);border-color:var(--red);}
+.btn-ban{color:var(--warn);border-color:rgba(255,107,0,0.3);}
+.btn-ban:hover{background:rgba(255,107,0,0.1);border-color:var(--warn);}
+.btn-dis{color:var(--gold);border-color:rgba(255,215,0,0.3);}
+.btn-dis:hover{background:rgba(255,215,0,0.05);border-color:var(--gold);}
+.inline-form{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;background:var(--panel);border:1px solid var(--border);padding:1.25rem;margin-bottom:1.5rem;}
+.inline-form .form-group{margin-bottom:0;min-width:150px;flex:1;}
+.inline-form .btn-sm{padding:12px 20px;background:linear-gradient(135deg,var(--neon2),var(--neon));color:var(--bg);font-family:var(--fh);font-size:0.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;z-index:9999;padding:1rem 1.5rem;font-family:var(--fm);font-size:0.8rem;letter-spacing:1px;border:1px solid;min-width:240px;opacity:0;transform:translateX(20px);transition:all 0.3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(0);}
+.toast.success{background:rgba(0,255,136,0.08);border-color:rgba(0,255,136,0.3);color:var(--success);}
+.toast.error{background:rgba(255,34,68,0.08);border-color:rgba(255,34,68,0.3);color:var(--red);}
+.toast.info{background:rgba(0,245,255,0.08);border-color:rgba(0,245,255,0.3);color:var(--neon);}
+
+@media(max-width:600px){
+  .nav-link{display:none;}
+  .hero h1{font-size:2rem;}
+  .signal-val{font-size:3.2rem;}
+  .signal-stats{grid-template-columns:repeat(3,1fr);}
+  .admin-stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="gridbg"></div>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+  <div class="loader-logo">AVIATOR<span style="color:var(--gold)">X</span></div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div class="loader-txt">Initializing Signal Engine...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="goTo('landing')">AVIATOR<span>X</span></div>
+  <div class="nav-links">
+    <span class="nav-link" onclick="scrollTo2('features')">Features</span>
+    <span class="nav-link" onclick="scrollTo2('faq')">FAQ</span>
+    <span id="nav-uname" style="font-family:var(--fm);font-size:0.72rem;color:var(--neon);display:none"></span>
+    <button class="btn-nav" id="nav-login" onclick="goAuth('login')">Log In</button>
+    <button class="btn-nav gold" id="nav-reg" onclick="goAuth('register')">Get Access</button>
+    <button class="btn-nav" id="nav-dash" style="display:none" onclick="goTo('dashboard')">Dashboard</button>
+    <button class="btn-nav" id="nav-prof" style="display:none" onclick="goTo('profile')">Profile</button>
+    <button class="btn-nav gold" id="nav-admin" style="display:none" onclick="goTo('admin')">Admin</button>
+    <button class="btn-nav red" id="nav-out" style="display:none" onclick="doLogout()">Logout</button>
+  </div>
+</nav>
+
+<!-- KEY MODAL -->
+<div class="modal-overlay" id="keyModal">
+  <div class="modal-box">
+    <button class="modal-close" id="modalCloseBtn">&#10005;</button>
+    <div class="modal-title">Access Verification</div>
+    <div class="modal-plat" id="modalPlatName">1xBET</div>
+    <div class="demo-keys-box">
+      Demo keys: <span>DEMO2026</span> &nbsp;·&nbsp; <span>VIP2026</span> &nbsp;·&nbsp; <span>TEST123</span>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Enter Access Key</label>
+      <input class="form-input" id="keyInput" placeholder="XXXXXXXXXX" maxlength="20" autocomplete="off">
+    </div>
+    <button class="btn-full" id="verifyBtn" style="margin-top:0">Verify Access</button>
+    <div class="modal-result" id="modalResult"></div>
+  </div>
+</div>
+
+<!-- =========================================================
+     LANDING
+========================================================= -->
+<div class="page active" id="page-landing">
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-badge">⚡ Demo / Educational Purpose Only</div>
+    <h1>
+      <span class="l1">NEXT-GEN</span>
+      <span class="l2">AVIATOR SIGNAL</span>
+      <span class="l3">INTELLIGENCE</span>
+    </h1>
+    <p class="hero-sub">A simulated signal platform showcasing advanced UI/UX design for betting analysis dashboards. All signals are randomly generated for demonstration purposes.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="goAuth('register')">Get Free Access</button>
+      <button class="btn-secondary" onclick="goAuth('login')">Sign In →</button>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div><div class="stat-num" id="cnt-users">0</div><div class="stat-label">Active Users</div></div>
+    <div><div class="stat-num" id="cnt-sigs">0</div><div class="stat-label">Signals Generated</div></div>
+    <div><div class="stat-num">10</div><div class="stat-label">Platforms</div></div>
+    <div><div class="stat-num" id="cnt-acc">0%</div><div class="stat-label">Demo Accuracy</div></div>
+  </div>
+
+  <div class="section" id="features">
+    <div class="section-title">Platform Features</div>
+    <div class="section-line"></div>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title">Real-Time Signals</div><div class="feature-desc">Live signal generation with countdown timers and confidence scoring. Auto-refreshes every 30–60 seconds.</div></div>
+      <div class="feature-card"><div class="feature-icon">🛡️</div><div class="feature-title">Secure Access Keys</div><div class="feature-desc">Key-based platform authentication. Demo keys: DEMO2026, VIP2026, TEST123 — work on any platform.</div></div>
+      <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Signal History</div><div class="feature-desc">Complete log of the last 20 generated signals with multiplier, confidence, and timestamp.</div></div>
+      <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title">10 Platforms</div><div class="feature-desc">1xBet, Mostbet, Melbet, Betwinner, BC.Game, Parimatch, Stake, Pin-Up, Linebet, Bet365.</div></div>
+      <div class="feature-card"><div class="feature-icon">👑</div><div class="feature-title">Membership Tiers</div><div class="feature-desc">Free, Premium, and VIP tiers. Select during registration. All tiers unlock the full demo feature set.</div></div>
+      <div class="feature-card"><div class="feature-icon">⚙️</div><div class="feature-title">Admin Panel</div><div class="feature-desc">User management, key control, platform management, and live stats dashboard. Login: admin / admin123.</div></div>
+    </div>
+  </div>
+
+  <div style="background:var(--panel2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:4rem 2rem;">
+    <div class="section-title">Supported Platforms</div>
+    <div class="section-line"></div>
+    <div class="platforms-strip">
+      <div class="platform-pill">1xBET</div><div class="platform-pill">MOSTBET</div>
+      <div class="platform-pill">MELBET</div><div class="platform-pill">BETWINNER</div>
+      <div class="platform-pill">BC.GAME</div><div class="platform-pill">PARIMATCH</div>
+      <div class="platform-pill">STAKE</div><div class="platform-pill">PIN-UP</div>
+      <div class="platform-pill">LINEBET</div><div class="platform-pill">BET365</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">User Reviews</div>
+    <div class="section-line"></div>
+    <div class="testi-grid">
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><div class="testi-text">The interface is incredibly clean. The signal display updates perfectly and the dark neon aesthetic is exactly what I was looking for.</div><div class="testi-author">// ALEX_K · VIP Member</div></div>
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><div class="testi-text">Smooth animations, fast loading, and the platform selection is spot on. Key verification works seamlessly on all platforms.</div><div class="testi-author">// DMITRI_V · Premium Member</div></div>
+      <div class="testi-card"><div class="testi-stars">★★★★☆</div><div class="testi-text">Demo signals are displayed beautifully. The confidence meter and countdown timer add a great sense of urgency to the UI.</div><div class="testi-author">// SOFIA_M · Premium Member</div></div>
+    </div>
+  </div>
+
+  <div class="section" id="faq">
+    <div class="section-title">FAQ</div>
+    <div class="section-line"></div>
+    <div class="faq-list">
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this.parentElement)">Are the signals real predictions?</div><div class="faq-a">No. All signals are randomly generated for UI/UX demo purposes only. No betting outcome can be predicted.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this.parentElement)">What are the demo access keys?</div><div class="faq-a">Enter DEMO2026, VIP2026, or TEST123 in the key popup on any platform card.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this.parentElement)">How do I access the admin panel?</div><div class="faq-a">Use the built-in admin login: Username <strong style="color:var(--gold)">admin</strong> · Password <strong style="color:var(--gold)">admin123</strong>. The Admin button appears in the navbar after login.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this.parentElement)">Is my data stored anywhere?</div><div class="faq-a">All data is stored only in your browser's localStorage. Nothing is sent to any server.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this.parentElement)">What membership types are available?</div><div class="faq-a">Free, Premium, and VIP — select during registration. All tiers have full feature access in this demo.</div></div>
+    </div>
+  </div>
+
+  <div class="disclaimer">⚠ DISCLAIMER: This is a UI/UX demo project only. All signals are randomly generated. Not affiliated with any betting platform. Please gamble responsibly.</div>
+  <footer>© 2026 <span>AviatorX</span> — Demo Platform · Educational &amp; Portfolio Purposes Only</footer>
+</div>
+
+<!-- =========================================================
+     AUTH
+========================================================= -->
+<div class="page" id="page-auth">
+
+  <!-- LOGIN -->
+  <div class="auth-box" id="loginBox">
+    <div class="auth-title">Signal Access</div>
+    <div class="form-group">
+      <label class="form-label">Username or Email</label>
+      <input class="form-input" id="loginUser" placeholder="username or email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="loginPass" placeholder="••••••••">
+      <div class="form-error" id="loginErr">Invalid credentials.</div>
+    </div>
+    <button class="btn-full" id="loginBtn">Access Platform</button>
+    <div class="admin-hint">Admin login &nbsp;→&nbsp; <strong>admin</strong> / <strong>admin123</strong></div>
+    <div class="auth-switch">No account? <a onclick="goAuth('register')">Create one</a></div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="auth-box" id="regBox" style="display:none">
+    <div class="auth-title">Join AviatorX</div>
+    <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="regName" placeholder="John Doe"></div>
+    <div class="form-group"><label class="form-label">Username</label><input class="form-input" id="regUser" placeholder="johndoe123"></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="regEmail" placeholder="john@example.com"></div>
+    <div class="form-group">
+      <label class="form-label">Membership</label>
+      <div class="member-select" id="memberSelect">
+        <div class="member-opt sel" data-v="Free">Free</div>
+        <div class="member-opt" data-v="Premium">Premium</div>
+        <div class="member-opt vip" data-v="VIP">VIP</div>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="regPass" placeholder="••••••••"></div>
+    <div class="form-group">
+      <label class="form-label">Confirm Password</label>
+      <input class="form-input" type="password" id="regPass2" placeholder="••••••••">
+      <div class="form-error" id="regErr">Error.</div>
+    </div>
+    <button class="btn-full" id="regBtn">Create Account</button>
+    <div class="auth-switch">Have an account? <a onclick="goAuth('login')">Log in</a></div>
+  </div>
+
+</div>
+
+<!-- =========================================================
+     DASHBOARD
+========================================================= -->
+<div class="page" id="page-dashboard">
+  <div class="dash-header">
+    <div>
+      <div class="dash-greeting">Welcome back, <span id="dashName">User</span></div>
+      <div style="font-family:var(--fm);font-size:0.7rem;color:var(--muted);margin-top:4px">Select a platform to start generating signals</div>
+    </div>
+    <div class="member-badge free" id="dashBadge">FREE</div>
+  </div>
+  <div class="dash-content">
+    <div class="dash-sub">Connected Platforms</div>
+    <div class="platform-grid" id="platGrid"></div>
+  </div>
+</div>
+
+<!-- =========================================================
+     SIGNAL
+========================================================= -->
+<div class="page" id="page-signal">
+  <div class="signal-wrap">
+    <div class="signal-top">
+      <div class="signal-plat">Platform: <span id="sigPlatName">1xBET</span></div>
+      <div><span class="status-dot"></span><span class="status-txt">Live Connected</span></div>
+    </div>
+
+    <div class="signal-main">
+      <div class="signal-lbl">Next Signal — Cashout Target</div>
+      <div class="signal-val" id="sigVal">2.15x</div>
+      <div class="signal-stats">
+        <div class="signal-stat"><div class="signal-stat-lbl">Confidence</div><div class="signal-stat-val" id="sigConf" style="color:var(--success)">87%</div></div>
+        <div class="signal-stat"><div class="signal-stat-lbl">Time Left</div><div class="signal-stat-val" id="sigTimer" style="color:var(--gold)">00:45</div></div>
+        <div class="signal-stat"><div class="signal-stat-lbl">Refresh In</div><div class="signal-stat-val" id="sigRefresh" style="color:var(--neon)">45s</div></div>
+      </div>
+    </div>
+
+    <div class="cd-wrap">
+      <div class="cd-hdr"><span>Signal Validity</span><span id="cdPct">100%</span></div>
+      <div class="cd-track"><div class="cd-fill" id="cdFill" style="width:100%"></div></div>
+    </div>
+
+    <div class="history-box">
+      <div class="history-ttl">▣ Signal History <span style="font-size:0.62rem;color:var(--muted);font-family:var(--fm)">(last 20)</span></div>
+      <div style="overflow-x:auto">
+        <table class="htable">
+          <thead><tr><th>#</th><th>Multiplier</th><th>Confidence</th><th>Time</th></tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:1.5rem">
+      <button class="btn-secondary" id="backBtn">← Back to Platforms</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     PROFILE
+========================================================= -->
+<div class="page" id="page-profile">
+  <div class="profile-wrap">
+    <div class="profile-card">
+      <div class="profile-avatar" id="profAvatar">JD</div>
+      <div class="profile-name" id="profName">John Doe</div>
+      <div style="margin-top:1.5rem">
+        <div class="profile-row"><span class="profile-key">Username</span><span class="profile-val" id="profUser">johndoe</span></div>
+        <div class="profile-row"><span class="profile-key">Email</span><span class="profile-val" id="profEmail">john@example.com</span></div>
+        <div class="profile-row"><span class="profile-key">Membership</span><span class="profile-val" id="profMember">Free</span></div>
+        <div class="profile-row"><span class="profile-key">Member Since</span><span class="profile-val" id="profDate">Jan 2026</span></div>
+        <div class="profile-row"><span class="profile-key">Signals Generated</span><span class="profile-val" style="color:var(--neon)" id="profSigs">0</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+      <button class="btn-secondary" onclick="goTo('dashboard')">← Dashboard</button>
+      <button class="btn-danger" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     ADMIN
+========================================================= -->
+<div class="page" id="page-admin">
+  <div class="admin-wrap">
+    <div class="admin-hdr">
+      <div><div class="admin-title">Admin Control Panel<small>Restricted Access · AviatorX</small></div></div>
+      <button class="btn-secondary" onclick="goTo('dashboard')">← Dashboard</button>
+    </div>
+    <div class="admin-stats-grid" id="adminStatsGrid"></div>
+    <div class="admin-tabs">
+      <div class="admin-tab act" onclick="switchAdminTab(this,'apUsers')">User Management</div>
+      <div class="admin-tab" onclick="switchAdminTab(this,'apKeys')">Key Management</div>
+      <div class="admin-tab" onclick="switchAdminTab(this,'apPlats')">Platforms</div>
+    </div>
+
+    <!-- USERS -->
+    <div class="admin-panel act" id="apUsers">
+      <div class="tbl-wrap">
+        <table class="atable">
+          <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Email</th><th>Membership</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="adminUsersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- KEYS -->
+    <div class="admin-panel" id="apKeys">
+      <div class="inline-form">
+        <div class="form-group"><label class="form-label">New Key</label><input class="form-input" id="newKeyVal" placeholder="MYKEY2026" style="text-transform:uppercase"></div>
+        <div class="form-group"><label class="form-label">Expiry Date</label><input class="form-input" type="date" id="newKeyExp"></div>
+        <button class="btn-sm" id="createKeyBtn">+ Create Key</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="atable">
+          <thead><tr><th>Key</th><th>Created</th><th>Expiry</th><th>Used By</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="adminKeysBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PLATFORMS -->
+    <div class="admin-panel" id="apPlats">
+      <div class="inline-form">
+        <div class="form-group"><label class="form-label">Platform Name</label><input class="form-input" id="newPlatName" placeholder="MYPLATFORM"></div>
+        <div class="form-group"><label class="form-label">Color (hex)</label><input class="form-input" id="newPlatColor" placeholder="#00f5ff"></div>
+        <button class="btn-sm" id="addPlatBtn">+ Add Platform</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="atable">
+          <thead><tr><th>#</th><th>Name</th><th>Color</th><th>Actions</th></tr></thead>
+          <tbody id="adminPlatsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// STORAGE
+// ================================================================
+const SK = {users:'avx_users',cur:'avx_cur',plats:'avx_plats',keys:'avx_keys',sigs:'avx_sigs'};
+const get = k => { try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; }};
+const set = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+const DEF_PLATS = [
+  {id:1,name:'1xBET',    color:'#e53935'},
+  {id:2,name:'MOSTBET',  color:'#ffa000'},
+  {id:3,name:'MELBET',   color:'#1e88e5'},
+  {id:4,name:'BETWINNER',color:'#00897b'},
+  {id:5,name:'BC.GAME',  color:'#8d6e63'},
+  {id:6,name:'PARIMATCH',color:'#c0ca33'},
+  {id:7,name:'STAKE',    color:'#1565c0'},
+  {id:8,name:'PIN-UP',   color:'#ad1457'},
+  {id:9,name:'LINEBET',  color:'#4527a0'},
+  {id:10,name:'BET365',  color:'#2e7d32'},
+];
+const DEF_KEYS = [
+  {key:'DEMO2026',created:'2026-01-01',expiry:'2026-12-31',usedBy:'',status:'valid'},
+  {key:'VIP2026', created:'2026-01-01',expiry:'2026-12-31',usedBy:'',status:'valid'},
+  {key:'TEST123', created:'2026-01-01',expiry:'2026-12-31',usedBy:'',status:'valid'},
+];
+const ADMIN = {id:0,name:'Administrator',username:'admin',email:'admin@aviatorx.com',password:'admin123',membership:'VIP',registered:'Jan 2026',status:'active',signals:0,isAdmin:true};
+
+function initStore(){
+  if(!get(SK.plats)) set(SK.plats, DEF_PLATS);
+  if(!get(SK.keys))  set(SK.keys,  DEF_KEYS);
+  if(!get(SK.users)) set(SK.users, []);
+  if(!get(SK.sigs))  set(SK.sigs,  0);
+}
+initStore();
+
+// ================================================================
+// STATE
+// ================================================================
+let user = null;
+let sigIntId = null;
+let cdIntId  = null;
+let sigHistory = [];
+let sigCount = 0;
+let cdTotal = 45, cdCur = 45;
+let activePlat = '';
+
+// ================================================================
+// BOOT
+// ================================================================
+window.addEventListener('load', () => {
+  animateCounters();
+  setTimeout(() => {
+    const l = document.getElementById('loader');
+    l.classList.add('out');
+    setTimeout(() => l.style.display = 'none', 500);
+    const saved = get(SK.cur);
+    if (saved) {
+      user = (saved.id === 0) ? ADMIN : saved;
+      updateNav();
+      goTo('dashboard');
+    }
+  }, 1800);
+});
+
+// ================================================================
+// NAV
+// ================================================================
+function updateNav() {
+  const on = !!user;
+  qi('nav-login').style.display  = on ? 'none' : '';
+  qi('nav-reg').style.display    = on ? 'none' : '';
+  qi('nav-dash').style.display   = on ? '' : 'none';
+  qi('nav-prof').style.display   = on ? '' : 'none';
+  qi('nav-out').style.display    = on ? '' : 'none';
+  qi('nav-uname').style.display  = on ? '' : 'none';
+  if (on) qi('nav-uname').textContent = '[' + user.username + ']';
+  qi('nav-admin').style.display  = (on && user.isAdmin) ? '' : 'none';
+}
+function qi(id){ return document.getElementById(id); }
+
+// ================================================================
+// ROUTING
+// ================================================================
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = qi('page-' + page);
+  if (!el) return;
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+  if (page === 'dashboard') renderDash();
+  if (page === 'profile')   renderProfile();
+  if (page === 'admin')     renderAdmin();
+}
+
+function goAuth(mode) {
+  goTo('auth');
+  qi('loginBox').style.display = mode === 'login'    ? '' : 'none';
+  qi('regBox').style.display   = mode === 'register' ? '' : 'none';
+  qi('loginErr').classList.remove('show');
+  qi('regErr').classList.remove('show');
+}
+
+function scrollTo2(id) {
+  if (!qi('page-landing').classList.contains('active')) goTo('landing');
+  setTimeout(() => { const el = qi(id); if (el) el.scrollIntoView({behavior:'smooth'}); }, 100);
+}
+
+// ================================================================
+// AUTH – LOGIN
+// ================================================================
+qi('loginBtn').addEventListener('click', doLogin);
+qi('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+qi('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  const u = qi('loginUser').value.trim();
+  const p = qi('loginPass').value;
+  const err = qi('loginErr');
+  err.classList.remove('show');
+  if (!u || !p) { err.textContent = 'Please fill in all fields.'; err.classList.add('show'); return; }
+
+  if ((u === 'admin' || u === 'admin@aviatorx.com') && p === 'admin123') {
+    user = ADMIN; set(SK.cur, user);
+    updateNav(); toast('Welcome back, Administrator!', 'success');
+    goTo('dashboard'); return;
+  }
+
+  const users = get(SK.users) || [];
+  const found = users.find(x => (x.username === u || x.email === u) && x.password === p);
+  if (!found) { err.textContent = 'Invalid credentials. Check username/password.'; err.classList.add('show'); return; }
+  if (found.status === 'banned') { err.textContent = 'This account has been banned.'; err.classList.add('show'); return; }
+
+  user = found; set(SK.cur, user);
+  updateNav(); toast('Welcome back, ' + found.name + '!', 'success');
+  goTo('dashboard');
+}
+
+// ================================================================
+// AUTH – REGISTER
+// ================================================================
+qi('regBtn').addEventListener('click', doRegister);
+
+function doRegister() {
+  const name  = qi('regName').value.trim();
+  const uname = qi('regUser').value.trim();
+  const email = qi('regEmail').value.trim();
+  const pass  = qi('regPass').value;
+  const pass2 = qi('regPass2').value;
+  const err   = qi('regErr');
+  const member= document.querySelector('#memberSelect .member-opt.sel')?.dataset.v || 'Free';
+  const setE  = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+
+  if (!name || !uname || !email || !pass) { setE('All fields are required.'); return; }
+  if (pass !== pass2)  { setE('Passwords do not match.'); return; }
+  if (pass.length < 6) { setE('Password must be at least 6 characters.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setE('Invalid email address.'); return; }
+  if (uname.toLowerCase() === 'admin') { setE('Username "admin" is reserved.'); return; }
+
+  const users = get(SK.users) || [];
+  if (users.find(x => x.username === uname)) { setE('Username already taken.'); return; }
+  if (users.find(x => x.email === email))    { setE('Email already registered.'); return; }
+
+  const isAdmin = uname.toLowerCase().includes('admin') || email.toLowerCase().startsWith('admin@');
+  const newUser = { id: Date.now(), name, username: uname, email, password: pass, membership: member,
+    registered: new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'}),
+    status: 'active', signals: 0, isAdmin };
+  users.push(newUser);
+  set(SK.users, users);
+  user = newUser; set(SK.cur, user);
+  updateNav(); toast('Account created! Welcome to AviatorX.', 'success');
+  goTo('dashboard');
+}
+
+// Membership selector
+document.querySelectorAll('#memberSelect .member-opt').forEach(opt => {
+  opt.addEventListener('click', function() {
+    document.querySelectorAll('#memberSelect .member-opt').forEach(o => o.classList.remove('sel'));
+    this.classList.add('sel');
+  });
+});
+
+function doLogout() {
+  stopSignalTimers();
+  user = null;
+  localStorage.removeItem(SK.cur);
+  updateNav(); goTo('landing');
+  toast('Signed out successfully.', 'info');
+}
+
+// ================================================================
+// DASHBOARD
+// ================================================================
+function renderDash() {
+  if (!user) { goTo('landing'); return; }
+  qi('dashName').textContent = user.name;
+  const b = qi('dashBadge');
+  b.textContent = user.membership;
+  b.className = 'member-badge ' + user.membership.toLowerCase();
+
+  const plats = get(SK.plats) || DEF_PLATS;
+  const grid  = qi('platGrid');
+  grid.innerHTML = '';
+
+  plats.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'platform-card';
+    const abbr = p.name.replace(/[^A-Z0-9]/gi, '').substring(0, 2).toUpperCase();
+    card.innerHTML = `
+      <div class="platform-logo" style="background:${p.color}">${abbr}</div>
+      <div class="platform-name">${esc(p.name)}</div>
+      <button class="btn-connect">CONNECT</button>
+    `;
+    const btn = card.querySelector('.btn-connect');
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openModal(p.name);
+    });
+    card.addEventListener('click', () => openModal(p.name));
+    grid.appendChild(card);
+  });
+}
+
+// ================================================================
+// KEY MODAL
+// ================================================================
+qi('modalCloseBtn').addEventListener('click', closeModal);
+qi('keyModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+qi('verifyBtn').addEventListener('click', verifyKey);
+qi('keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') verifyKey(); });
+qi('keyInput').addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+
+function openModal(platName) {
+  activePlat = platName;
+  qi('modalPlatName').textContent = platName;
+  qi('keyInput').value = '';
+  const r = qi('modalResult');
+  r.className = 'modal-result';
+  r.textContent = '';
+  qi('keyModal').classList.add('open');
+  setTimeout(() => qi('keyInput').focus(), 80);
+}
+
+function closeModal() {
+  qi('keyModal').classList.remove('open');
+}
+
+function verifyKey() {
+  const k = qi('keyInput').value.trim().toUpperCase();
+  const r = qi('modalResult');
+  if (!k) { r.className = 'modal-result err'; r.textContent = '✕ Please enter a key.'; return; }
+  const stored = get(SK.keys) || DEF_KEYS;
+  const validSet = new Set(['DEMO2026', 'VIP2026', 'TEST123', ...stored.filter(x => x.status === 'valid').map(x => x.key)]);
+  if (validSet.has(k)) {
+    r.className = 'modal-result ok';
+    r.textContent = '✓ ACCESS GRANTED — Connecting to ' + activePlat + '...';
+    setTimeout(() => { closeModal(); launchSignal(activePlat); }, 1400);
+  } else {
+    r.className = 'modal-result err';
+    r.textContent = '✕ INVALID KEY — Try: DEMO2026 · VIP2026 · TEST123';
+  }
+}
+
+// ================================================================
+// SIGNAL GENERATOR
+// ================================================================
+qi('backBtn').addEventListener('click', () => { stopSignalTimers(); goTo('dashboard'); });
+
+function stopSignalTimers() {
+  if (sigIntId)  { clearInterval(sigIntId); sigIntId  = null; }
+  if (cdIntId)   { clearInterval(cdIntId);  cdIntId   = null; }
+}
+
+function launchSignal(plat) {
+  stopSignalTimers();
+  sigHistory = []; sigCount = 0;
+  qi('sigPlatName').textContent = plat;
+  qi('histBody').innerHTML = '';
+  goTo('signal');
+  newSignal();
+  startCountdown(5);
+  sigIntId = setInterval(() => {
+    newSignal();
+    startCountdown(5);
+  }, 5000);
+}
+
+function newSignal() {
+  const raw  = 1.2 + Math.random() * 6.8;
+  const mult = raw.toFixed(2) + 'x';
+  const conf = (70 + Math.floor(Math.random() * 29)) + '%';
+  sigCount++;
+  const el = qi('sigVal');
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+  el.textContent = mult;
+  el.style.color = raw < 2 ? '#88aaff' : raw < 4 ? 'var(--neon)' : raw < 6 ? 'var(--gold)' : 'var(--gold2)';
+  qi('sigConf').textContent = conf;
+  const t = new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  sigHistory.unshift({n: sigCount, v: raw, s: mult, c: conf, t});
+  if (sigHistory.length > 20) sigHistory.pop();
+  renderHistory();
+  if (user && user.id !== 0) {
+    const us = get(SK.users) || [];
+    const u2 = us.find(x => x.id === user.id);
+    if (u2) { u2.signals = (u2.signals || 0) + 1; set(SK.users, us); user = u2; set(SK.cur, user); }
+  }
+  set(SK.sigs, (get(SK.sigs) || 0) + 1);
+}
+
+function renderHistory() {
+  qi('histBody').innerHTML = sigHistory.map(s => {
+    const cls = s.v < 2 ? 'mc1' : s.v < 4 ? 'mc2' : s.v < 6 ? 'mc3' : 'mc4';
+    return `<tr><td style="color:var(--muted)">#${s.n}</td><td class="${cls}" style="font-weight:700">${s.s}</td><td style="color:var(--success)">${s.c}</td><td style="color:var(--muted)">${s.t}</td></tr>`;
+  }).join('');
+}
+
+function startCountdown(sec) {
+  if (cdIntId) { clearInterval(cdIntId); cdIntId = null; }
+  cdTotal = sec; cdCur = sec;
+  cdIntId = setInterval(() => {
+    if (cdCur > 0) cdCur--;
+    const pct = Math.round((cdCur / cdTotal) * 100);
+    qi('sigTimer').textContent   = '00:' + String(cdCur).padStart(2, '0');
+    qi('sigRefresh').textContent = cdCur + 's';
+    qi('cdFill').style.width     = pct + '%';
+    qi('cdPct').textContent      = pct + '%';
+  }, 1000);
+}
+
+// ================================================================
+// PROFILE
+// ================================================================
+function renderProfile() {
+  if (!user) return;
+  const u = user.id === 0 ? ADMIN : (get(SK.users) || []).find(x => x.id === user.id) || user;
+  const init = u.name.split(' ').map(x => x[0]).join('').substring(0, 2).toUpperCase();
+  qi('profAvatar').textContent = init;
+  qi('profName').textContent   = u.name;
+  qi('profUser').textContent   = u.username;
+  qi('profEmail').textContent  = u.email;
+  qi('profMember').innerHTML   = `<span style="color:${u.membership==='VIP'?'var(--gold)':u.membership==='Premium'?'var(--neon)':'var(--muted)'}">${u.membership}</span>`;
+  qi('profDate').textContent   = u.registered;
+  qi('profSigs').textContent   = u.signals || 0;
+}
+
+// ================================================================
+// ADMIN
+// ================================================================
+function renderAdmin() {
+  if (!user?.isAdmin) { toast('Admin access required.', 'error'); goTo('dashboard'); return; }
+  const users = get(SK.users) || [];
+  const keys  = get(SK.keys)  || DEF_KEYS;
+  const plats = get(SK.plats) || DEF_PLATS;
+  const sigs  = get(SK.sigs)  || 0;
+
+  qi('adminStatsGrid').innerHTML = [
+    ['var(--neon)',    users.length,                            'Total Users'],
+    ['var(--success)', users.filter(u=>u.status==='active').length, 'Active Users'],
+    ['var(--gold)',    sigs.toLocaleString(),                   'Signals Generated'],
+    ['var(--warn)',    plats.length,                            'Platforms'],
+    ['#a855f7',        keys.filter(k=>k.status==='valid').length,'Active Keys'],
+  ].map(([c,n,l]) => `<div class="admin-stat" style="--clr:${c}"><div class="admin-stat-num">${n}</div><div class="admin-stat-lbl">${l}</div></div>`).join('');
+
+  // Users
+  qi('adminUsersBody').innerHTML = users.length
+    ? users.map((u, i) => `<tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td>${esc(u.name)}</td>
+        <td style="color:var(--neon)">${esc(u.username)}</td>
+        <td style="font-size:0.72rem;color:var(--muted)">${esc(u.email)}</td>
+        <td><span class="badge badge-${u.membership.toLowerCase()}">${u.membership}</span></td>
+        <td style="color:var(--muted)">${u.registered}</td>
+        <td><span class="badge badge-${u.status}">${u.status}</span></td>
+        <td><div class="act-btns">
+          <button class="btn-act btn-ban" data-id="${u.id}">${u.status==='banned'?'Unban':'Ban'}</button>
+          <button class="btn-act btn-del" data-id="${u.id}">Delete</button>
+        </div></td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No registered users yet.</td></tr>';
+
+  // Keys
+  qi('adminKeysBody').innerHTML = keys.map(k => `<tr>
+    <td style="color:var(--neon);font-weight:700">${esc(k.key)}</td>
+    <td style="color:var(--muted)">${k.created}</td>
+    <td>${k.expiry}</td>
+    <td style="color:var(--muted)">${k.usedBy || '—'}</td>
+    <td><span class="badge badge-${k.status}">${k.status}</span></td>
+    <td><div class="act-btns">
+      <button class="btn-act btn-dis" data-key="${esc(k.key)}">${k.status==='valid'?'Disable':'Enable'}</button>
+      <button class="btn-act btn-del" data-key="${esc(k.key)}">Delete</button>
+    </div></td>
+  </tr>`).join('');
+
+  // Platforms
+  qi('adminPlatsBody').innerHTML = plats.map((p,i) => `<tr>
+    <td style="color:var(--muted)">${i+1}</td>
+    <td style="font-weight:700">${esc(p.name)}</td>
+    <td><span style="display:inline-block;width:14px;height:14px;background:${p.color};border-radius:2px;vertical-align:middle;margin-right:6px"></span>${p.color}</td>
+    <td><button class="btn-act btn-del" data-pid="${p.id}">Remove</button></td>
+  </tr>`).join('');
+
+  bindAdminEvents();
+}
+
+function bindAdminEvents() {
+  // Users
+  qi('adminUsersBody').querySelectorAll('.btn-ban').forEach(b => {
+    b.onclick = () => { adminBan(Number(b.dataset.id)); };
+  });
+  qi('adminUsersBody').querySelectorAll('.btn-del').forEach(b => {
+    b.onclick = () => { adminDelUser(Number(b.dataset.id)); };
+  });
+  // Keys
+  qi('adminKeysBody').querySelectorAll('.btn-dis').forEach(b => {
+    b.onclick = () => { adminToggleKey(b.dataset.key); };
+  });
+  qi('adminKeysBody').querySelectorAll('.btn-del').forEach(b => {
+    b.onclick = () => { adminDelKey(b.dataset.key); };
+  });
+  // Platforms
+  qi('adminPlatsBody').querySelectorAll('.btn-del').forEach(b => {
+    b.onclick = () => { adminDelPlat(Number(b.dataset.pid)); };
+  });
+}
+
+function adminBan(id) {
+  const us = get(SK.users) || [];
+  const u2 = us.find(x => x.id === id);
+  if (!u2) return;
+  u2.status = u2.status === 'banned' ? 'active' : 'banned';
+  set(SK.users, us);
+  toast('User ' + (u2.status === 'banned' ? 'banned' : 'unbanned') + '.', 'info');
+  renderAdmin();
+}
+function adminDelUser(id) {
+  set(SK.users, (get(SK.users)||[]).filter(x => x.id !== id));
+  toast('User deleted.', 'error');
+  renderAdmin();
+}
+function adminToggleKey(key) {
+  const ks = get(SK.keys) || [];
+  const k2 = ks.find(x => x.key === key);
+  if (!k2) return;
+  k2.status = k2.status === 'valid' ? 'disabled' : 'valid';
+  set(SK.keys, ks);
+  toast('Key ' + (k2.status === 'disabled' ? 'disabled' : 'enabled') + '.', 'info');
+  renderAdmin();
+}
+function adminDelKey(key) {
+  set(SK.keys, (get(SK.keys)||[]).filter(k => k.key !== key));
+  toast('Key removed.', 'error');
+  renderAdmin();
+}
+function adminDelPlat(id) {
+  set(SK.plats, (get(SK.plats)||[]).filter(p => p.id !== id));
+  toast('Platform removed.', 'error');
+  renderAdmin();
+}
+
+// Create key button
+qi('createKeyBtn').addEventListener('click', () => {
+  const val = qi('newKeyVal').value.trim().toUpperCase();
+  const exp = qi('newKeyExp').value;
+  if (!val) { toast('Enter a key value.', 'error'); return; }
+  const ks = get(SK.keys) || [];
+  if (ks.find(k => k.key === val)) { toast('Key already exists.', 'error'); return; }
+  ks.push({ key: val, created: new Date().toISOString().slice(0,10), expiry: exp || '2027-12-31', usedBy: '', status: 'valid' });
+  set(SK.keys, ks);
+  qi('newKeyVal').value = '';
+  toast('Key created: ' + val, 'success');
+  renderAdmin();
+});
+
+// Add platform button
+qi('addPlatBtn').addEventListener('click', () => {
+  const name  = qi('newPlatName').value.trim().toUpperCase();
+  const color = qi('newPlatColor').value.trim() || '#00f5ff';
+  if (!name) { toast('Enter a platform name.', 'error'); return; }
+  const plats = get(SK.plats) || [];
+  const newId = (Math.max(...plats.map(p => p.id), 0)) + 1;
+  plats.push({ id: newId, name, color });
+  set(SK.plats, plats);
+  qi('newPlatName').value = '';
+  qi('newPlatColor').value = '';
+  toast('Platform added: ' + name, 'success');
+  renderAdmin();
+});
+
+function switchAdminTab(el, panelId) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('act'));
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('act'));
+  el.classList.add('act');
+  qi(panelId).classList.add('act');
+}
+
+// ================================================================
+// HELPERS
+// ================================================================
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function toggleFaq(item) { item.classList.toggle('open'); }
+
+let toastT;
+function toast(msg, type = 'info') {
+  const t = qi('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function animateCounters() {
+  animN('cnt-users',  12847,  2000, v => v.toLocaleString());
+  animN('cnt-sigs',  284921,  2000, v => v.toLocaleString());
+  animN('cnt-acc',     91.4,  2000, v => v.toFixed(1) + '%');
+}
+function animN(id, target, dur, fmt) {
+  const el = qi(id); let v = 0;
+  const step = target / (dur / 16);
+  const t = setInterval(() => {
+    v += step;
+    if (v >= target) { v = target; clearInterval(t); }
+    el.textContent = fmt(v);
+  }, 16);
+}
+</script>
+</body>
+</html>
